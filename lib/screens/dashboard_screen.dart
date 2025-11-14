@@ -1,5 +1,3 @@
-// lib/screens/dashboard_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,95 +14,85 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<GradeProvider>(context);
-    final recent = provider.recentGrades;
-    final gpa = provider.gpa;
+    final p = Provider.of<GradeProvider>(context);
+    final recent = p.recentGrades;
+    final gpa = p.gpa;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Dashboard"),
+        elevation: 0,
       ),
 
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, size: 20),
         onPressed: () {
           Navigator.pushNamed(context, AddEditGradeScreen.routeName);
         },
       ),
 
       body: RefreshIndicator(
-        onRefresh: () => provider.loadAllGrades(),
+        onRefresh: () => p.loadAllGrades(),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           children: [
 
-            // -------------------------------------------------------------
-            // GPA CARD
-            // -------------------------------------------------------------
-            Card(
-              elevation: 3,
-              child: ListTile(
-                title: const Text(
-                  "Current GPA",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  gpa.toStringAsFixed(2),
-                  style: const TextStyle(fontSize: 22),
-                ),
+            // ------------------------- GPA ---------------------------
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey.shade100,
               ),
-            ),
-
-            const SizedBox(height: 25),
-
-            // -------------------------------------------------------------
-            // PERFORMANCE TREND (SMALL CHART)
-            // -------------------------------------------------------------
-            const Text(
-              "Performance Trend",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-
-            // FIXED: No overflow now
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                height: 160,
-
-                // Prevent overflow
-                child: const FittedBox(
-                  fit: BoxFit.contain,
-                  child: SizedBox(
-                    height: 160,
-                    width: 350,
-                    child: SmallChart(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("GPA"),
+                  Text(
+                    gpa.toStringAsFixed(2),
+                    style: const TextStyle(fontSize: 20),
                   ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ---------------------- Trend Chart -----------------------
+            const Text("Trend", style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 6),
+
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                height: 150,
+                color: Colors.grey.shade100,
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: SmallChart(),
                 ),
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 20),
 
-            // -------------------------------------------------------------
-            // RECENT GRADES
-            // -------------------------------------------------------------
-            const Text(
-              "Recent Grades",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 10),
+            // --------------------- Recent Grades ----------------------
+            const Text("Recent Grades", style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 6),
 
             if (recent.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text("No grades added yet."),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: Text(
+                    "Nothing added yet.",
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
                 ),
               ),
 
             ...recent.map(
-              (g) => GestureDetector(
+              (g) => InkWell(
                 onTap: () {
                   Navigator.pushNamed(
                     context,

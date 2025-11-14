@@ -11,8 +11,7 @@ class AddEditGradeScreen extends StatefulWidget {
 
   final Grade? grade;
 
-  const AddEditGradeScreen.add({super.key}) : grade = null;
-  const AddEditGradeScreen.edit({required this.grade, super.key});
+  const AddEditGradeScreen({super.key, this.grade});
 
   @override
   State<AddEditGradeScreen> createState() => _AddEditGradeScreenState();
@@ -40,7 +39,7 @@ class _AddEditGradeScreenState extends State<AddEditGradeScreen> {
     maxMarks = g?.maxMarks ?? 100;
     obtainedMarks = g?.obtainedMarks ?? 0;
     selectedDate = g?.date ?? DateTime.now();
-    remarks = g?.remarks;
+    remarks = g?.remarks ?? "";
     term = g?.term ?? "Sem 1";
   }
 
@@ -78,6 +77,7 @@ class _AddEditGradeScreenState extends State<AddEditGradeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdit ? "Edit Grade" : "Add Grade"),
+        centerTitle: true,
         actions: [
           if (isEdit)
             IconButton(
@@ -92,83 +92,127 @@ class _AddEditGradeScreenState extends State<AddEditGradeScreen> {
       ),
 
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              // Course Code
-              TextFormField(
-                initialValue: courseCode,
-                decoration: const InputDecoration(labelText: "Course Code"),
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Enter course code" : null,
-                onSaved: (v) => courseCode = v!.trim(),
+              _simpleField(
+                label: "Course Code",
+                initial: courseCode,
+                onSave: (v) => courseCode = v!,
               ),
 
-              // Assessment Type
-              DropdownButtonFormField(
+              const SizedBox(height: 12),
+
+              _simpleDropdown(
+                label: "Assessment Type",
                 value: assessmentType,
-                decoration:
-                    const InputDecoration(labelText: "Assessment Type"),
-                items: const [
-                  DropdownMenuItem(value: "Midterm", child: Text("Midterm")),
-                  DropdownMenuItem(value: "Final", child: Text("Final")),
-                  DropdownMenuItem(value: "Assignment", child: Text("Assignment")),
-                ],
-                onChanged: (v) => assessmentType = v.toString(),
+                items: ["Midterm", "Final", "Assignment"],
+                onChanged: (v) => assessmentType = v!,
               ),
 
-              // Max Marks
-              TextFormField(
-                initialValue: maxMarks.toString(),
-                decoration: const InputDecoration(labelText: "Max Marks"),
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? "Invalid" : null,
-                onSaved: (v) => maxMarks = double.parse(v!),
+              const SizedBox(height: 12),
+
+              _simpleField(
+                label: "Max Marks",
+                initial: maxMarks.toString(),
+                number: true,
+                onSave: (v) => maxMarks = double.parse(v!),
               ),
 
-              // Obtained Marks
-              TextFormField(
-                initialValue: obtainedMarks.toString(),
-                decoration:
-                    const InputDecoration(labelText: "Obtained Marks"),
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || double.tryParse(v) == null ? "Invalid" : null,
-                onSaved: (v) => obtainedMarks = double.parse(v!),
+              const SizedBox(height: 12),
+
+              _simpleField(
+                label: "Obtained Marks",
+                initial: obtainedMarks.toString(),
+                number: true,
+                onSave: (v) => obtainedMarks = double.parse(v!),
               ),
 
-              // Term
-              DropdownButtonFormField(
-                value: term,
-                decoration: const InputDecoration(labelText: "Term"),
-                items: const [
-                  DropdownMenuItem(value: "Sem 1", child: Text("Sem 1")),
-                  DropdownMenuItem(value: "Sem 2", child: Text("Sem 2")),
-                  DropdownMenuItem(value: "Sem 3", child: Text("Sem 3")),
-                  DropdownMenuItem(value: "Sem 4", child: Text("Sem 4")),
-                ],
-                onChanged: (v) => term = v.toString(),
+              const SizedBox(height: 12),
+
+              _simpleDropdown(
+                label: "Term",
+                value: term!,
+                items: ["Sem 1", "Sem 2", "Sem 3", "Sem 4"],
+                onChanged: (v) => term = v!,
               ),
 
-              // Remarks
-              TextFormField(
-                initialValue: remarks,
-                decoration: const InputDecoration(labelText: "Remarks"),
-                onSaved: (v) => remarks = v,
+              const SizedBox(height: 12),
+
+              _simpleField(
+                label: "Remarks",
+                initial: remarks,
+                onSave: (v) => remarks = v,
               ),
 
               const SizedBox(height: 25),
 
-              ElevatedButton(
-                onPressed: _save,
-                child: Text(isEdit ? "Update" : "Add"),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(isEdit ? "Update" : "Add"),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // -------------------------------------------------------------
+  // REUSABLE SIMPLE WIDGETS
+  // -------------------------------------------------------------
+
+  Widget _simpleField({
+    required String label,
+    required String? initial,
+    required FormFieldSetter<String?> onSave,
+    bool number = false,
+  }) {
+    return TextFormField(
+      initialValue: initial,
+      keyboardType: number ? TextInputType.number : TextInputType.text,
+      decoration: InputDecoration(
+        labelText: label,
+        border: InputBorder.none,
+        filled: true,
+        fillColor: Colors.grey.shade100,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      ),
+      validator: (v) => v == null || v.isEmpty ? "Required" : null,
+      onSaved: onSave,
+    );
+  }
+
+  Widget _simpleDropdown({
+    required String label,
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        decoration: InputDecoration(
+          labelText: label,
+          border: InputBorder.none,
+        ),
+        items: items
+            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            .toList(),
+        onChanged: onChanged,
       ),
     );
   }
