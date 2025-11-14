@@ -16,9 +16,9 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gradeProvider = Provider.of<GradeProvider>(context);
-    final recent = gradeProvider.recentGrades;
-    final gpa = gradeProvider.gpa;
+    final provider = Provider.of<GradeProvider>(context);
+    final recent = provider.recentGrades;
+    final gpa = provider.gpa;
 
     return Scaffold(
       appBar: AppBar(
@@ -33,33 +33,62 @@ class DashboardScreen extends StatelessWidget {
       ),
 
       body: RefreshIndicator(
-        onRefresh: () => gradeProvider.loadAllGrades(),
+        onRefresh: () => provider.loadAllGrades(),
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // GPA Card
+
+            // -------------------------------------------------------------
+            // GPA CARD
+            // -------------------------------------------------------------
             Card(
               elevation: 3,
               child: ListTile(
-                title: const Text("Current GPA",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                subtitle: Text(gpa.toStringAsFixed(2),
-                    style: const TextStyle(fontSize: 22)),
+                title: const Text(
+                  "Current GPA",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  gpa.toStringAsFixed(2),
+                  style: const TextStyle(fontSize: 22),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
 
-            // Trend Chart Placeholder
+            const SizedBox(height: 25),
+
+            // -------------------------------------------------------------
+            // PERFORMANCE TREND (SMALL CHART)
+            // -------------------------------------------------------------
             const Text(
               "Performance Trend",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 10),
-            SizedBox(height: 150, child: SmallChart()),
+
+            // FIXED: No overflow now
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                height: 160,
+
+                // Prevent overflow
+                child: const FittedBox(
+                  fit: BoxFit.contain,
+                  child: SizedBox(
+                    height: 160,
+                    width: 350,
+                    child: SmallChart(),
+                  ),
+                ),
+              ),
+            ),
 
             const SizedBox(height: 25),
 
-            // Recent Grades
+            // -------------------------------------------------------------
+            // RECENT GRADES
+            // -------------------------------------------------------------
             const Text(
               "Recent Grades",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -67,18 +96,25 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 10),
 
             if (recent.isEmpty)
-              const Center(child: Text("No grades added yet.")),
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text("No grades added yet."),
+                ),
+              ),
 
-            ...recent.map((g) => GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      CourseScreen.routeName,
-                      arguments: g.courseCode,
-                    );
-                  },
-                  child: GradeItem(grade: g),
-                )),
+            ...recent.map(
+              (g) => GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    CourseScreen.routeName,
+                    arguments: g.courseCode,
+                  );
+                },
+                child: GradeItem(grade: g),
+              ),
+            ),
           ],
         ),
       ),

@@ -1,4 +1,4 @@
-// utils/pdf_export.dart
+// lib/utils/pdf_export.dart
 
 import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
@@ -30,7 +30,7 @@ class PDFExport {
 
             pw.SizedBox(height: 20),
 
-            pw.Text("Overall GPA: $overallGpa",
+            pw.Text("Overall GPA: ${overallGpa.toStringAsFixed(2)}",
                 style: pw.TextStyle(
                     fontSize: 16, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
@@ -46,9 +46,10 @@ class PDFExport {
                 "Date",
               ],
               data: grades.map((g) {
-                final percent =
-                    GPACalculator.marksToPercentage(g.obtainedMarks, g.maxMarks);
-                final gpa = GPACalculator.percentageToGpa(percent);
+                // use the Grade.percentage getter and GpaCalculator helpers
+                final percent = GpaCalculator.marksToPercentage(
+                    g.obtainedMarks, g.maxMarks);
+                final gpa = GpaCalculator.percentageToGpa(percent);
 
                 return [
                   g.courseCode,

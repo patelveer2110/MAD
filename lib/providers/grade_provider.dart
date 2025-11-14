@@ -26,12 +26,11 @@ class GradeProvider extends ChangeNotifier {
 
   Future<void> addGrade(Grade grade) async {
     await AppDatabase.instance.insertGrade(grade);
-    await loadAllGrades(); // reload list + GPA
+    await loadAllGrades();
   }
 
   Future<void> updateGrade(Grade grade) async {
     if (grade.id == null) return;
-
     await AppDatabase.instance.updateGrade(grade);
     await loadAllGrades();
   }
@@ -47,7 +46,7 @@ class GradeProvider extends ChangeNotifier {
 
   /// Grades grouped by courseCode
   Map<String, List<Grade>> get gradesByCourse {
-    Map<String, List<Grade>> map = {};
+    final Map<String, List<Grade>> map = {};
     for (var g in _grades) {
       map.putIfAbsent(g.courseCode, () => []);
       map[g.courseCode]!.add(g);
@@ -67,18 +66,17 @@ class GradeProvider extends ChangeNotifier {
 
   /// Get recent entries (latest 5)
   List<Grade> get recentGrades {
-    List<Grade> sorted = [..._grades];
+    final List<Grade> sorted = [..._grades];
     sorted.sort((a, b) => b.date.compareTo(a.date));
     return sorted.take(5).toList();
   }
-  
-  get GPACalculator => null;
 
   // ---------------------------------------------------------------------------
   // GPA CALCULATION
   // ---------------------------------------------------------------------------
 
   void _recalculateGPA() {
-    _gpa = GPACalculator.calculateGPA(_grades);
+    _gpa = GpaCalculator.calculateGpa(_grades);
   }
 }
+ 
